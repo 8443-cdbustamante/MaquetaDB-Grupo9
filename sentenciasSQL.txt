@@ -1,0 +1,301 @@
+.open DBMisil.db
+
+PRAGMA foreign_keys = ON;
+
+/* 1. CREACION DE TABLAS Y SUS RELACIONES*/
+
+/* proveedor */
+create table proveedor(
+id_pro TEXT PRIMARY KEY NOT NULL,
+nombre_pro TEXT NOT NULL,
+tipo_pro TEXT NOT NULL,
+email_pro TEXT NOT NULL,
+telefono_pro TEXT NOT NULL,
+descripcion_pro TEXT NOT NULL,
+status_pro TEXT NOT NULL
+);
+
+/* pieza */
+create table pieza(
+id_pieza TEXT PRIMARY KEY NOT NULL,
+nombre_pieza TEXT NOT NULL,
+tipo_pieza TEXT NOT NULL,
+cantidad_pieza INT NOT NULL,
+fecha_fac_pieza TEXT NOT NULL
+);
+
+/* componente*/
+create table componente(
+id_com TEXT PRIMARY KEY NOT NULL,
+nombre_com TEXT NOT NULL,
+tipo_com TEXT NOT NULL
+);
+
+/* rol*/
+create table rol(
+id_rol TEXT PRIMARY KEY NOT NULL,
+nombre_rol TEXT NOT NULL,
+fecha_asigna_rol TEXT NOT NULL,
+status_rol TEXT NOT NULL
+);
+
+/* permisos*/
+create table permiso(
+id_perm TEXT PRIMARY KEY NOT NULL,
+entidad_perm TEXT NOT NULL,
+tipo_perm TEXT NOT NULL,
+fecha_asigna_perm TEXT NOT NULL,
+fecha_caduca_perm TEXT NOT NULL,
+status_perm TEXT NOT NULL
+);
+
+/* misil */
+create table misil(
+id_mis TEXT PRIMARY KEY NOT NULL,
+nombre_mis TEXT NOT NULL,
+tipo_mis TEXT NOT NULL,
+fecha_entrega_mis TEXT NOT NULL,
+status_mis TEXT NOT NULL
+);
+
+/* parametro */
+create table parametro(
+id_par TEXT PRIMARY KEY NOT NULL,
+descripcion_par TEXT NOT NULL,
+decreto_par TEXT NOT NULL,
+status_par TEXT NOT NULL
+);
+
+/* departamento */
+create table departamento(
+id_depar TEXT PRIMARY KEY NOT NULL,
+nombre_depar TEXT NOT NULL,
+tipo_depar TEXT NOT NULL,
+descripcion_depar TEXT NOT NULL
+);
+
+/* personal */
+create table personal(
+id_per TEXT PRIMARY KEY NOT NULL,
+genero_per TEXT NOT NULL,
+nombre_per TEXT NOT NULL,
+email_per TEXT NOT NULL,
+fecha_nac_per TEXT NOT NULL,
+id_depar TEXT NOT NULL,
+FOREIGN KEY (id_depar) REFERENCES departamento (id_depar)
+);
+
+/* ingeniero*/
+create table ingeniero(
+id_per TEXT PRIMARY KEY NOT NULL,
+especialidad_ing TEXT NOT NULL,
+FOREIGN KEY (id_per) REFERENCES personal (id_per)
+);
+
+/* tecnico*/
+create table tecnico(
+id_per TEXT PRIMARY KEY NOT NULL,
+horas_experiencia INT NOT NULL,
+FOREIGN KEY (id_per) REFERENCES personal (id_per)
+);
+
+/* administrador*/
+create table administrador(
+id_per TEXT PRIMARY KEY NOT NULL,
+num_proyectos_realizados INT NOT NULL,
+FOREIGN KEY (id_per) REFERENCES personal (id_per)
+);
+
+/* cumplir */
+create table cumplir(
+nota TEXT NOT NULL,
+id_mis TEXT NOT NULL,
+id_par TEXT NOT NULL,
+FOREIGN KEY (id_mis) REFERENCES misil (id_mis),
+FOREIGN KEY (id_par) REFERENCES parametro (id_par),
+PRIMARY KEY (id_mis,id_par)
+);
+
+/* abastecer */
+create table abastecer(
+fecha_compra TEXT NOT NULL,
+id_pieza TEXT NOT NULL,
+id_pro TEXT NOT NULL,
+FOREIGN KEY (id_pieza) REFERENCES pieza (id_pieza),
+FOREIGN KEY (id_pro) REFERENCES proveedor (id_pro),
+PRIMARY KEY (id_pieza,id_pro)
+);
+
+/* integrar */
+create table integrar(
+cantidad_necesaria INT NOT NULL,
+id_com TEXT NOT NULL,
+id_pieza TEXT NOT NULL,
+FOREIGN KEY (id_com) REFERENCES componente (id_com),
+FOREIGN KEY (id_pieza) REFERENCES pieza (id_pieza),
+PRIMARY KEY (id_com,id_pieza)
+);
+
+/* configurar */
+create table configurar(
+descripcion_conf TEXT NOT NULL,
+id_perm TEXT NOT NULL,
+id_rol TEXT NOT NULL,
+FOREIGN KEY (id_perm) REFERENCES permiso (id_perm),
+FOREIGN KEY (id_rol) REFERENCES rol (id_rol),
+PRIMARY KEY (id_perm,id_rol)
+);
+
+/* asignar */
+/*
+-- se elimina para evitar redundancias
+create table asignar(
+fecha_asignacion TEXT NOT NULL,
+id_rol_asig TEXT NOT NULL,
+id_per_asig TEXT NOT NULL,
+FOREIGN KEY (id_per_asig) REFERENCES personal (id_per),
+FOREIGN KEY (id_rol_asig) REFERENCES rol (id_rol),
+PRIMARY KEY (id_per_asig,id_rol_asig)
+);*/
+
+/* ensamblar */
+create table ensamblar(
+fecha_ensamblar TEXT NOT NULL,
+id_rol_ens TEXT NOT NULL,
+id_per_ens TEXT NOT NULL,
+id_mis TEXT NOT NULL,
+id_com TEXT NOT NULL,
+FOREIGN KEY (id_per_ens) REFERENCES personal (id_per),
+FOREIGN KEY (id_rol_ens) REFERENCES rol (id_rol),
+FOREIGN KEY (id_mis) REFERENCES misil (id_mis),
+FOREIGN KEY (id_com) REFERENCES componente (id_com),
+PRIMARY KEY (id_rol_ens,id_per_ens,id_mis,id_com)
+);
+
+/* 2. IMPORTACION DATOS DESDE ARCHIVO CSV*/
+
+.mode csv
+.import archivos/dataset_proveedor.csv proveedor2
+.import archivos/dataset_pieza.csv pieza2
+.import archivos/dataset_componentes.csv componente2
+.import archivos/dataset_Roles.csv rol2
+.import archivos/dataset_Permisos.csv permiso2
+.import archivos/dataset_misil.csv misil2
+.import archivos/dataset_parametro.csv parametro2
+.import archivos/dataset_departamento.csv departamento2
+.import archivos/dataset_users.csv personal2
+.import archivos/dataset_ingeniero.csv ingeniero2
+.import archivos/dataset_tecnico.csv tecnico2
+.import archivos/dataset_administrador.csv administrador2
+.import archivos/dataset_cumplir.csv cumplir2
+.import archivos/dataset_abastecer.csv abastecer2
+.import archivos/dataset_integrar.csv integrar2
+.import archivos/dataset_configurar.csv configurar2
+/*
+.import archivos/dataset_asignar.csv asignar2
+*/
+.import archivos/dataset_ensamblar.csv ensamblar2
+
+/* 3. COPIADO DE DATOS*/
+
+insert into proveedor(id_pro,nombre_pro,tipo_pro,email_pro,telefono_pro,descripcion_pro,status_pro)
+select Id_pro,nombre_pro,tipo_pro,email_pro,telefono_pro,descripcion_pro,Status_pro
+from proveedor2;
+
+insert into pieza(id_pieza,nombre_pieza,tipo_pieza,cantidad_pieza,fecha_fac_pieza)
+select Id_pieza,nombre_pieza,tipo_pieza,cantidad_pieza,fecha_fac_pieza
+from pieza2;
+
+insert into componente(id_com,nombre_com,tipo_com)
+select Id_com,nombre_com,Tipo_com
+from componente2;
+
+insert into rol(id_rol,nombre_rol,fecha_asigna_rol,status_rol)
+select Id_rol,nombre_rol,fecha_asigna_rol,Status_rol
+from rol2;
+
+insert into permiso(id_perm,entidad_perm,tipo_perm,fecha_asigna_perm,fecha_caduca_perm,status_perm)
+select Id_perm,entidad_perm,tipo_perm,fecha_asigna_perm,fecha_caduca_perm,Status_perm
+from permiso2;
+
+insert into misil(id_mis,nombre_mis,tipo_mis,fecha_entrega_mis,status_mis)
+select Id_mis,Nombre_mis,Tipo_mis,Fecha_entrega_mis,Status_mis
+from misil2;
+
+insert into parametro(id_par,descripcion_par,decreto_par,status_par)
+select Id_par,Descripcion_par,Decreto_par,Status_par
+from parametro2;
+
+insert into departamento(id_depar,nombre_depar,tipo_depar,descripcion_depar)
+select Id_depar,nombre_depar,Tipo_depar,descripcion_depar
+from departamento2;
+
+insert into personal(id_per,genero_per,nombre_per,email_per,fecha_nac_per,id_depar)
+select Id_per,genero_per,nombre_per,email_per,fecha_nac_per,Id_depar
+from personal2;
+
+insert into ingeniero(id_per,especialidad_ing)
+select Id_per,especialidad_ing
+from ingeniero2;
+
+insert into tecnico(id_per,horas_experiencia)
+select Id_per,horas_experiencia
+from tecnico2;
+
+insert into administrador(id_per,num_proyectos_realizados)
+select Id_per,num_proyectos_realizados
+from administrador;
+
+insert into cumplir(nota,id_mis,id_par)
+select Nota,Id_mis,Id_par
+from cumplir2;
+
+insert into abastecer(fecha_compra,id_pieza,id_pro)
+select fecha_compra,Id_pieza,Id_pro
+from abastecer2;
+
+insert into integrar(cantidad_necesaria,id_com,id_pieza)
+select cantidad_necesaria,Id_com,Id_pieza
+from integrar2;
+
+insert into configurar(descripcion_conf,id_perm,id_rol)
+select descripcion_conf,Id_perm,Id_rol
+from configurar2;
+
+/*
+insert into asignar(fecha_asignacion,id_rol_asig,id_per_asig)
+select Fecha_asignacion,Id_rol,Id_per
+from asignar2;
+*/
+
+insert into ensamblar(fecha_ensamblar,id_rol_ens,id_per_ens,id_mis,id_com)
+select Fecha_ensamblar,Id_rol,Id_per,Id_mis,Id_com
+from ensamblar2;
+
+/* 4. ELIMINACION TABLAS AUXILIARES*/
+
+drop table proveedor2;
+drop table pieza2;
+drop table componente2;
+drop table rol2;
+drop table permiso2;
+drop table misil2;
+drop table parametro2;
+drop table departamento2;
+drop table personal2;
+drop table ingeniero2;
+drop table tecnico2;
+drop table administrador2;
+drop table cumplir2;
+drop table abastecer2;
+drop table integrar2;
+drop table configurar2;
+/*
+drop table asignar2;
+*/
+drop table ensamblar2;
+
+/* 5. VERIFICACION DE LOS ESQUEMAS DE LAS TABLAS CREADAS*/
+.schema
+
+
