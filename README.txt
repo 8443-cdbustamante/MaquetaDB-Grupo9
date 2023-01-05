@@ -1,5 +1,5 @@
 Para crear la base de datos requiere:
-1. descargaer la carpeta archivos y el archivo sentenciasSQL
+1. descargar la carpeta archivos y el archivo sentenciasSQL
 2. Colocar en un directorio
 3. Ejecutar Sqlite3 en la dirección del directorio
 4. Dentro de la consola de comandos de Sqlite ejecutar el comando:
